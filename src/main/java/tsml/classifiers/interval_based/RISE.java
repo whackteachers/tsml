@@ -1448,9 +1448,10 @@ public class RISE extends EnhancedAbstractClassifier implements TrainTimeContrac
     }
 
     public static void main(String[] args) {
-
-        Instances dataTrain = loadDataNullable("Z:/ArchiveData/Univariate_arff" + "/" + DatasetLists.tscProblems112[11] + "/" + DatasetLists.tscProblems112[11] + "_TRAIN");
-        Instances dataTest = loadDataNullable("Z:/ArchiveData/Univariate_arff" + "/" + DatasetLists.tscProblems112[11] + "/" + DatasetLists.tscProblems112[11] + "_TEST");
+        String dataset = "GunPoint"; //DatasetLists.tscProblems112[11];
+        String path = "C:/Users/bloodfog/IdeaProjects/tsml/src/main/java/experiments/data/tsc/" + dataset + "/" + dataset;
+        Instances dataTrain = loadDataNullable(path + "_TRAIN.arff");
+        Instances dataTest = loadDataNullable(path + "_TEST.arff");
         Instances data = dataTrain;
         data.addAll(dataTest);
 
@@ -1468,7 +1469,7 @@ public class RISE extends EnhancedAbstractClassifier implements TrainTimeContrac
         try {
             RISE = new RISE();
             RISE.setTransformType(TransformType.ACF_FFT);
-            RISE.setIntervalMethod(4);
+            RISE.setIntervalMethod(3);
             cr = sse.evaluate(RISE, data);
             System.out.println(RISE.getTransformType().toString());
             System.out.println("Accuracy: " + cr.getAcc());

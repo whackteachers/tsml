@@ -16,6 +16,7 @@ package experiments;
 
 import evaluation.MultipleClassifiersPairwiseTest;
 import evaluation.MultipleClassifierEvaluation;
+import experiments.data.DatasetLists;
 import fileIO.InFile;
 import fileIO.OutFile;
 import java.io.File;
@@ -1052,14 +1053,30 @@ public static void basicSummaryComparisons(){
        singleClassifiervsReferenceResults(input);
         
     }
+    public static void basicUsageForMCE() throws Exception {
+//Assumes the results folders are  C://Results//tsmlRISE and   C://Results//sktimeRISE
+//Writes the results to C://Results//CollatedResults
+        MultipleClassifierEvaluation m=new MultipleClassifierEvaluation(
+                "C:/Users/bloodfog/Desktop/collation/_buffer/",
+                "CollatedResults_sktimeAll_tsml", 1);
+        m.setIgnoreMissingResults(true);
+        m.setBuildMatlabDiagrams(false);
+        m.setDebugPrinting(true);
+        m.setUseAllStatistics();
+        m.setDatasets(DatasetLists.equalLengthProblems);
+        m.readInClassifiers(new String[] {"RISE_tsml","RISE_sktime","RISE_sktime 1.0","RISE_sktime 2.0"},
+                "C:/Users/bloodfog/Desktop/collation/");
+        m.runComparison();
+    }
     public static void main(String[] args) throws Exception {
+        basicUsageForMCE();
  
         
         
-        if (args.length == 0) {//Local run
-            bakeOffPath=bakeOffPathBeast;
-            hiveCotePath=hiveCotePathBeast;
-            quickStats("C:/Temp/CNN/CNN10hours",false,1,false);
+//        if (args.length == 0) {//Local run
+//            bakeOffPath=bakeOffPathBeast;
+//            hiveCotePath=hiveCotePathBeast;
+//            quickStats("C:/Temp/CNN/CNN10hours",false,1,false);
             //,"HIVE-COTE,ST","HIVE-COTE,HIVE-COTE");
 //          quickStats("Z:/Results/BOSS variants/Univariate/RBOSS250",false,30,false,"HIVE-COTE,BOSS");
 //TunedTSF
@@ -1088,27 +1105,28 @@ public static void basicSummaryComparisons(){
 
             
             
-        }
-        else{           //Cluster run
-            bakeOffPath=bakeOffPathCluster;
-            hiveCotePath=hiveCotePathCluster;
-            System.out.println("Cluster Job Args:");
-            for(String s:args)
-                System.out.println(s);
-            singleClassifiervsReferenceResults(args);
-        }
-            
-        System.exit(0);
-        boolean singleClassifierStats=true;
-        if(singleClassifierStats)
-            singleClassifierFullStats(args);
-        else
-            multipleClassifierFullStats(args);
-    } 
+//        }
+//        else{           //Cluster run
+//            bakeOffPath=bakeOffPathCluster;
+//            hiveCotePath=hiveCotePathCluster;
+//            System.out.println("Cluster Job Args:");
+//            for(String s:args)
+//                System.out.println(s);
+//            singleClassifiervsReferenceResults(args);
+//        }
+//
+//        System.exit(0);
+//        boolean singleClassifierStats=true;
+//        if(singleClassifierStats)
+//            singleClassifierFullStats(args);
+//        else
+//            multipleClassifierFullStats(args);
+//    }
     
     
     
     
     
     
+    }
 }
