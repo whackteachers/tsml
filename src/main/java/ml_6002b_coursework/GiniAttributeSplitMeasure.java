@@ -1,18 +1,12 @@
 package ml_6002b_coursework;
 
 import weka.core.Attribute;
-import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.Utils;
 
-import java.util.Enumeration;
-
-public class IGAttributeSplitMeasure implements AttributeSplitMeasure{
+public class GiniAttributeSplitMeasure implements AttributeSplitMeasure{
     /**
-     * Implement and test the skeleton class IGAttributeSplitMeasure so that the split is
-     * performed using information gain. I strongly advise you to look at how the original class
-     * Id3 does this, and you have my permission to copy the code from Id3, but if you do
-     * please attribute it in the comments.
+     * Implement and test a class GiniAttributeSplitMeasure that implements
+     * AttributeSplitMeasure and measures the quality using the Gini index statistic.
      * **/
 
     @Override
