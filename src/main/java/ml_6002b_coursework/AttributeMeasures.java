@@ -37,6 +37,14 @@ public class AttributeMeasures {
         return 0;
     }
 
+    public void printHeadacheSplit(String cls){
+        System.out.println("measure " + getClass().getSimpleName() + " for headache splitting diagnosis = " + cls);
+    }
+
+    public void printSplit(String attribute, String cls){
+        System.out.println("measure " + getClass().getSimpleName() + " for attribute" + attribute + " splitting diagnosis = " + cls);
+    }
+
     /**
      Include a main method test harness that tests each function by finding each measure
      for the attribute headache in terms of the diagnosis.
@@ -50,6 +58,7 @@ public class AttributeMeasures {
          * diagnosis. Print each measure to the console, in the form
          * “measure <insert> for headache splitting diagnosis = <insert>”.
          * **/
+
     }
 
 }

@@ -15,6 +15,18 @@ public interface AttributeSplitMeasure {
     double computeAttributeQuality(Instances data, Attribute att) throws Exception;
 
     /**
+     * Currently, ID3Coursework can only be used with nominal attributes. Implement a method
+     * in AttributeSplitMeasure called splitDataOnNumeric that randomises the mechanism for
+     * handling continuous attributes. This should involve selecting a random attribute
+     * value between the minimum and maximum for that attribute, then making a binary split
+     * of instances into those below the value and those above the value. This should be done
+     * prior to measuring the attribute quality.
+     **/
+    default double splitDataOnNumeric(Instances data, Attribute att){
+        return 0.0;
+    };
+
+    /**
      * Splits a dataset according to the values of a nominal attribute.
      *
      * @param data the data which is to be split
@@ -36,5 +48,4 @@ public interface AttributeSplitMeasure {
         }
         return splitData;
     }
-
 }

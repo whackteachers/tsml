@@ -74,6 +74,29 @@ public class ID3Coursework
   extends AbstractClassifier 
   implements TechnicalInformationHandler, Sourcable {
 
+  /**
+   * Your task is to facilitate using IG, gini and chi squared attribute selection mechanisms within
+   * the ID3Coursework classifier provided. The class ID3Coursework in the package
+   * ml 6002b coursework is a clone of the Weka Id3 classifier with minor cosmetic changes. It
+   * is advisable to revisit the lab sheet on decision trees and to look at the original source for
+   * ID3. There is an interface called AttributeSplitMeasure that is used in ID3Coursework.
+   * You need to implement variants of this interface and use them within the ID3Coursework.
+   * The interface contains a single abstract method, computeAttributeQuality, that takes an
+   * Instances and an Attribute, that should return the quality of the attribute passed. There is
+   * also a default method splitData to split Instances by the Attribute.
+   *
+   * Configure ID3Coursework so that it can be used with any of the three attribute split
+   * measures you have implemented. Adjust ID3Coursework so that the split criterion can
+   * be set through setOptions.
+   *
+   * Currently, ID3Coursework can only be used with nominal attributes. Implement a method
+   * in AttributeSplitMeasure called splitDataOnNumeric that randomises the mechanism for
+   * handling continuous attributes. This should involve selecting a random attribute
+   * value between the minimum and maximum for that attribute, then making a binary split
+   * of instances into those below the value and those above the value. This should be done
+   * prior to measuring the attribute quality.
+   * **/
+
   /** for serialization */
   static final long serialVersionUID = -2693678647096322561L;
   
@@ -420,12 +443,27 @@ public class ID3Coursework
     return RevisionUtils.extract("$Revision: 6404 $");
   }
 
+  public void printMeasureAccuracy(String problem, double accuracy){
+    System.out.println("Id3 using measure " + attSplit.getClass().getSimpleName() +
+                       " on " + problem + " Problem has test accuracy = " + accuracy);
+  }
+
   /**
    * Main method.
    *
    * @param args the options for the classifier
    */
   public static void main(String[] args) {
+    /**
+     * The majority of the marks will be for correctness. However, some consideration will be given
+     * to efficiency and code quality. You do not have to use the methods defined in part 1. Add
+     * a main method to the class C45Coursework that loads the problem optdigits (all nominal
+     * attributes) from the directory test data (do not use absolute file paths for this), performs a
+     * random split, then builds classifiers using IG, ChiSquared and Gini split criteria, outputting the
+     * test accuracy of each to console in the form
+     * “Id3 using measure <insert> on JW Problem has test accuracy = <insert>”.
+     * Repeat this for the data set ChinaTown (all continuous attributes).
+     * **/
     runClassifier(new ID3Coursework(), args);
   }
 }
