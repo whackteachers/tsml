@@ -1058,13 +1058,13 @@ public static void basicSummaryComparisons(){
 //Writes the results to C://Results//CollatedResults
         MultipleClassifierEvaluation m=new MultipleClassifierEvaluation(
                 "C:/Users/bloodfog/Desktop/collation/_buffer/",
-                "CollatedResults_sktimeAll_tsml", 1);
+                "CollatedResults_sktime3_1_tsml", 1);
         m.setIgnoreMissingResults(true);
         m.setBuildMatlabDiagrams(false);
         m.setDebugPrinting(true);
         m.setUseAllStatistics();
         m.setDatasets(DatasetLists.equalLengthProblems);
-        m.readInClassifiers(new String[] {"RISE_tsml","RISE_sktime","RISE_sktime 1.0","RISE_sktime 2.0"},
+        m.readInClassifiers(new String[] {"RISE_tsml","RISE_sktime 3.1"},
                 "C:/Users/bloodfog/Desktop/collation/");
         m.runComparison();
     }

@@ -3,8 +3,13 @@ package ml_6002b_coursework;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.filters.unsupervised.attribute.RandomSubset;
 
+import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Random;
+
+import static experiments.data.DatasetLoading.loadData;
 
 /**
  * Interface for alternative attribute split measures for Part 2.2 of the coursework
@@ -22,9 +27,24 @@ public interface AttributeSplitMeasure {
      * of instances into those below the value and those above the value. This should be done
      * prior to measuring the attribute quality.
      **/
-    default double splitDataOnNumeric(Instances data, Attribute att){
-        return 0.0;
-    };
+    default Instances[] splitDataOnNumeric(Instances data, Attribute att){
+        // get the split value from the minimum and maximum for the attribute
+        Random random= new Random();
+        double min= data.kthSmallestValue(att, 1);
+        double max= data.kthSmallestValue(att, data.size());
+        double randomSplitValue = random.doubles(min, max).findFirst().getAsDouble();
+        System.out.println(randomSplitValue);
+
+        // make binary split where 0 is below and 1 is above the split value
+        Instances[] splitData = new Instances[2];
+        for (int i = 0; i < 2; i++)
+            splitData[i] = new Instances(data, data.numInstances());
+
+        for (Instance inst : data)
+            splitData[inst.value(att) < randomSplitValue ? 0 : 1].add(inst);
+
+        return splitData;
+    }
 
     /**
      * Splits a dataset according to the values of a nominal attribute.
@@ -33,7 +53,10 @@ public interface AttributeSplitMeasure {
      * @param att the attribute to be used for splitting
      * @return the sets of instances produced by the split
      */
-     default Instances[] splitData(Instances data, Attribute att) {
+     default Instances[] splitData(Instances data, Attribute att){
+        if (att.isNumeric())
+            return splitDataOnNumeric(data, att);
+
         Instances[] splitData = new Instances[att.numValues()];
         for (int j = 0; j < att.numValues(); j++) {
             splitData[j] = new Instances(data, data.numInstances());
@@ -47,5 +70,18 @@ public interface AttributeSplitMeasure {
             splitData[i].compactify();
         }
         return splitData;
+    }
+
+    default void testMain(String measure) throws Exception {
+        Instances data = loadData("./test_data/Diagnosis.arff");
+        String[] attributes = {"Headache", "Spots", "StiffNeck"};
+        for (String attribute : attributes) {
+            System.out.println(
+                "measure " + measure +
+                " for attribute " + attribute +
+                " splitting diagnosis = " +
+                this.computeAttributeQuality(data, data.attribute(attribute))
+            );
+        }
     }
 }

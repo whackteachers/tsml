@@ -4,8 +4,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Utils;
-
-import java.util.Enumeration;
+import java.util.Arrays;
 
 public class IGAttributeSplitMeasure implements AttributeSplitMeasure{
     /**
@@ -15,17 +14,44 @@ public class IGAttributeSplitMeasure implements AttributeSplitMeasure{
      * please attribute it in the comments.
      * **/
 
-    @Override
-    public double computeAttributeQuality(Instances data, Attribute att) throws Exception {
-        return 0;
+    private double computeEntropy(Instances data){
+        // adapted and modified from Id3 computeEntropy method
+        double [] classCounts = new double[data.numClasses()];
+        for (Instance inst : data)
+            classCounts[(int) inst.classValue()]++;
+
+        double entropy = 0, numInstances = data.numInstances();
+        for (double classCount : classCounts) {
+            if (classCount > 0) {
+                entropy -= classCount * Utils.log2(classCount);
+            }
+        }
+        entropy /= numInstances;
+        return entropy + Utils.log2(numInstances);
     }
 
-    public static void main(String[] args) {
+    @Override
+    public double computeAttributeQuality(Instances data, Attribute att){
+        // adapted and modified from Id3 computeEntropy method
+        double infoGain = computeEntropy(data);
+        Instances[] splitData = splitData(data, att);
+        for (Instances split : splitData) {
+            double splitInstances = split.numInstances();
+            if (splitInstances > 0) {
+                infoGain -= (splitInstances / data.numInstances()) *
+                            computeEntropy(split);
+            }
+        }
+        return infoGain;
+    }
+
+    public static void main(String[] args) throws Exception {
         /**
          * Include a main method in all three AttributeSplitMeasure classes that prints out the split criteria
          * value for Headache, Spots and Stiff Neck for the data from Section 1 for the whole data. Print
          * in the form “measure <insert> for attribute <insert> splitting diagnosis = <insert>”.
          * **/
-
+        IGAttributeSplitMeasure ig = new IGAttributeSplitMeasure();
+        ig.testMain("information gain");
     }
 }

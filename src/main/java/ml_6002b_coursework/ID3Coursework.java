@@ -23,13 +23,21 @@
 package ml_6002b_coursework;
 
 import weka.classifiers.AbstractClassifier;
+import weka.classifiers.Evaluation;
 import weka.classifiers.Sourcable;
 import weka.core.*;
 import weka.core.Capabilities.Capability;
 import weka.core.TechnicalInformation.Field;
 import weka.core.TechnicalInformation.Type;
 
+import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import static experiments.data.DatasetLoading.loadData;
+import static utilities.ClassifierTools.accuracy;
+import static utilities.InstanceTools.resampleInstances;
 
 /**
 
@@ -114,8 +122,29 @@ public class ID3Coursework
 
   /** Class attribute of dataset. */
   private Attribute m_ClassAttribute;
+
   private AttributeSplitMeasure attSplit = new IGAttributeSplitMeasure();
 
+  public void setAttSplit(AttributeSplitMeasure attSplit) {
+    this.attSplit = attSplit;
+  }
+
+  @Override
+  public void setOptions(String[] options) throws Exception {
+    switch (Utils.getOption('A', options)){
+      case "ig":
+      case "infoGain":
+        attSplit = new IGAttributeSplitMeasure();
+        break;
+      case "gini":
+        attSplit = new GiniAttributeSplitMeasure();
+        break;
+      case "chi":
+      case "chi squared":
+        attSplit = new ChiSquaredAttributeSplitMeasure();
+        break;
+    }
+  }
 
   /**
    * Returns a string describing the classifier.
@@ -219,6 +248,7 @@ public class ID3Coursework
     
     // Make leaf if information gain is zero. 
     // Otherwise create successors.
+    // stop when there is only 1 class or no more attribute to split
     if (Utils.eq(infoGains[m_Attribute.index()], 0)) {
       m_Attribute = null;
       m_Distribution = new double[data.numClasses()];
@@ -443,27 +473,83 @@ public class ID3Coursework
     return RevisionUtils.extract("$Revision: 6404 $");
   }
 
-  public void printMeasureAccuracy(String problem, double accuracy){
-    System.out.println("Id3 using measure " + attSplit.getClass().getSimpleName() +
-                       " on " + problem + " Problem has test accuracy = " + accuracy);
-  }
 
   /**
    * Main method.
    *
    * @param args the options for the classifier
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     /**
      * The majority of the marks will be for correctness. However, some consideration will be given
      * to efficiency and code quality. You do not have to use the methods defined in part 1. Add
-     * a main method to the class C45Coursework that loads the problem optdigits (all nominal
+     * a main method to the class Id3Coursework that loads the problem optdigits (all nominal
      * attributes) from the directory test data (do not use absolute file paths for this), performs a
-     * random split, then builds classifiers using IG, ChiSquared and Gini split criteria, outputting the
-     * test accuracy of each to console in the form
+     * random split, then builds classifiers using IG, ChiSquared and Gini split criteria,
+     * outputting the test accuracy of each to console in the form
      * “Id3 using measure <insert> on JW Problem has test accuracy = <insert>”.
      * Repeat this for the data set ChinaTown (all continuous attributes).
      * **/
-    runClassifier(new ID3Coursework(), args);
+
+    Instances train = loadData("./test_data/Chinatown_TRAIN.arff");
+    Instances test = loadData("./test_data/Chinatown_TEST.arff");
+    Instances optdigits = loadData("./test_data/optdigits.arff");
+    Instances[] trainTest = resampleInstances(optdigits, 0, 0.7);
+    Instances optdigitsTrain = trainTest[0];
+    Instances optdigitsTest = trainTest[1];
+    HashMap<String, Instances[]> datasets = new HashMap<>();
+    datasets.put("optdigits", trainTest);
+    datasets.put("Chinatown", new Instances[]{train, test});
+    /**
+     * {
+     *     'chinatown':{
+     *         'ig': IGAttributeSplitMeasure(),
+     *         'gini': GiniAttributeSplitMeasure(),
+     *         'chi squared': ChiSquaredAttributeSplitMeasure()
+     *     },
+     *     'optdigits':{
+     *         'ig': IGAttributeSplitMeasure(),
+     *         'gini': GiniAttributeSplitMeasure(),
+     *         'chi squared': ChiSquaredAttributeSplitMeasure()
+     *     }
+     * }
+     *
+     * for p in dict:
+     *    load p
+     *    train_test_split
+     * for a in SplitMeasure:
+     *    Id3(criterion=a)
+     *    fit
+     *    test and print accuracy
+     * **/
+    ID3Coursework id3 = new ID3Coursework();
+//    id3.setAttSplit(new GiniAttributeSplitMeasure());
+//    id3.setAttSplit(new ChiSquaredAttributeSplitMeasure());
+//    HashMap<String, AttributeSplitMeasure> measures = new HashMap<>();
+//    measures.put("information gain", new IGAttributeSplitMeasure());
+//    measures.put("gini", new GiniAttributeSplitMeasure());
+//    measures.put("chi squared", new ChiSquaredAttributeSplitMeasure());
+//    measures.put("chi squared yates", new ChiSquaredAttributeSplitMeasure(true));
+//    datasets.forEach((problem, instances) ->
+//        measures.forEach(
+//            (measure, value) -> {
+//              try {
+//                id3.setAttSplit(value);
+//                id3.buildClassifier(instances[0]);
+//                System.out.println(
+//                    "Id3 using measure " + measure +
+//                    " on " + problem +
+//                    " Problem has test accuracy = " +
+//                    accuracy(instances[1], id3)
+//                );
+//              } catch (Exception e) {
+//                e.printStackTrace();
+//              }
+//            }
+//        )
+//    );
+    id3.buildClassifier(optdigitsTrain);
+    System.out.println("Id3 using measure " + "ig" + " on " + "optdigits" + " Problem has test accuracy = " + accuracy(optdigitsTest, id3));
+//    runClassifier(id3, args);
   }
 }

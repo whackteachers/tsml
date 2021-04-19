@@ -1448,7 +1448,7 @@ public class RISE extends EnhancedAbstractClassifier implements TrainTimeContrac
     }
 
     public static void main(String[] args) {
-        String dataset = "GunPoint"; //DatasetLists.tscProblems112[11];
+        String dataset = "ArrowHead"; //DatasetLists.tscProblems112[11];
         String path = "C:/Users/bloodfog/IdeaProjects/tsml/src/main/java/experiments/data/tsc/" + dataset + "/" + dataset;
         Instances dataTrain = loadDataNullable(path + "_TRAIN.arff");
         Instances dataTest = loadDataNullable(path + "_TEST.arff");
@@ -1458,7 +1458,7 @@ public class RISE extends EnhancedAbstractClassifier implements TrainTimeContrac
         ClassifierResults cr = null;
         SingleSampleEvaluator sse = new SingleSampleEvaluator();
         //sse.setPropInstancesInTrain(0.5);
-        sse.setSeed(1);
+        sse.setSeed(0);
 
         RISE RISE = null;
         System.out.println("Dataset name: " + data.relationName());

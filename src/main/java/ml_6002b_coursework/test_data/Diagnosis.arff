@@ -1,20 +1,20 @@
 @RELATION Diagnosis
 
-@ATTRIBUTE Headache  {0,1}
-@ATTRIBUTE Spots     {0,1}
-@ATTRIBUTE StiffNeck {0,1}
-@ATTRIBUTE class {1, -1}
-@DATA
+@attribute Headache  {0,1}
+@attribute Spots     {0,1}
+@attribute StiffNeck {0,1}
+@attribute class     {1,-1}
+@data
 
-1, 1, 1, 1
-0, 1, 1, 1
-0, 1, 0, 1
-1, 0, 1, 1
-0, 1, 1, 1
-1, 0, 1, 1
-0, 1, 0, -1
-0, 0, 1, -1
-0, 1, 0, -1
-1, 0, 1, -1
-1, 0, 0, -1
-0, 0, 0, -1
+1,1,1,1
+0,1,1,1
+0,1,0,1
+1,0,1,1
+0,1,1,1
+1,0,1,1
+0,1,0,-1
+0,0,1,-1
+0,1,0,-1
+1,0,1,-1
+1,0,0,-1
+0,0,0,-1

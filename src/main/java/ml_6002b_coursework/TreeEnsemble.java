@@ -14,6 +14,8 @@ public class TreeEnsemble extends AbstractClassifier {
      * consists of an ensemble of ID3Coursework classifiers stored in an array or List. Set the default
      * ensemble size to 50. TreeEnsemble should be in the package ml_6002b_coursework.
      * **/
+    private int numTrees = 50;
+    private double proportion = 0.5;
     @Override
     public void buildClassifier(Instances data) throws Exception {
         /**
