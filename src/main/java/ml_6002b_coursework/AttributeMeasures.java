@@ -34,36 +34,37 @@ import static java.lang.Double.max;
  */
 public class AttributeMeasures {
 
-    private static double entropy(int[][] split) throws Exception {
+    private static double entropy(int[] split) throws Exception {
         // adapted and modified from weka id3 computeEntropy method
         double entropy = 0, count = 0;
-        for (int[] attribute : split) {
-            for (int classCount : attribute) {
-                if (classCount > 0) {
-                    entropy -= classCount * Utils.log2(classCount);
-                    count += classCount;
-                }
+        for (int classCount : split) {
+            if (classCount > 0) {
+                entropy -= classCount * Utils.log2(classCount);
+                count += classCount;
             }
         }
 
         entropy /= count;
         return entropy + Utils.log2(count);
     }
-
-    public static double measureInformationGain(int[][] root, int[][] split) throws Exception {
+// 2 5  - 7
+// 3 3     - 6
+    public static double measureInformationGain(int[][] split) throws Exception {
         // measureInformationGain returns the information gain for the contingency table
-        int[] temp = new int[split[0].length];
-        for (int i = 0; i < split.length; i++) {
+        if (split == null || split.length == 0 || split[0].length == 0)
+            return 0;
+
+        int[] root = new int[split[0].length];
+        for (int[] attributeValue : split) {
             for (int j = 0; j < split[0].length; j++) {
-                temp[i] += split[i][j];
+                root[j] += attributeValue[j];
             }
         }
         double infoGain = entropy(root), count = 0, sum = 0;
-//        Instances[] splitData = splitData(split, att);
         for (int[] attributeValue : split) {
-            int attributeValueCount = Arrays.stream(attributeValue).sum();
+            double attributeValueCount = Arrays.stream(attributeValue).sum();
             if (attributeValueCount > 0){
-                sum += (double) attributeValueCount * entropy(new int[][]{attributeValue});
+                sum += attributeValueCount * entropy(attributeValue);
                 count += attributeValueCount;
             }
         }
@@ -71,15 +72,13 @@ public class AttributeMeasures {
         return infoGain;
     }
 
-    private static double impurity(int[][] split) throws Exception {
+    private static double impurity(int[] split) throws Exception {
         // adapted and modified from weka id3 computeEntropy method
         double impurity = 0, count = 0;
-        for (int[] attribute : split) {
-            for (int classCount : attribute) {
-                if (classCount > 0) {
-                    impurity += classCount * classCount;
-                    count += classCount;
-                }
+        for (int classCount : split) {
+            if (classCount > 0) {
+                impurity += classCount * classCount;
+                count += classCount;
             }
         }
 
@@ -87,14 +86,22 @@ public class AttributeMeasures {
         return impurity;
     }
 
-    public static double measureGini(int[][] root, int[][] split) throws Exception {
+    public static double measureGini(int[][] split) throws Exception {
         // measureGini returns the gini measure for the contingency table
-        double gini = impurity(root), count = 0, sum = 0;
-//        Instances[] splitData = splitData(split, att);
+        if (split == null || split.length == 0 || split[0].length == 0)
+            return 0;
+
+        int[] root = new int[split[0].length];
         for (int[] attributeValue : split) {
-            int attributeValueCount = Arrays.stream(attributeValue).sum();
+            for (int j = 0; j < split[0].length; j++) {
+                root[j] += attributeValue[j];
+            }
+        }
+        double gini = impurity(root), count = 0, sum = 0;
+        for (int[] attributeValue : split) {
+            double attributeValueCount = Arrays.stream(attributeValue).sum();
             if (attributeValueCount > 0){
-                sum += (double) attributeValueCount * impurity(new int[][]{attributeValue});
+                sum += attributeValueCount * impurity(attributeValue);
                 count += attributeValueCount;
             }
         }
@@ -102,40 +109,38 @@ public class AttributeMeasures {
         return gini;
     }
     private static double chiSquared(int[][] split, boolean yates){
-        double chival = 0, n = 0;
+        double chi = 0, n = 0;
 
-        int nrows = split.length;
-        int ncols = split[0].length;
-        int df = (nrows - 1)*(ncols - 1);
-        if (df <= 0) {
+        int attributeValues = split.length;
+        int classes = split[0].length;
+        if (attributeValues <= 1 && classes <= 1 || split[0].length == 0)
             return 0;
-        }
-        double[] rtotal = new double [nrows];
-        double[] ctotal = new double [ncols];
 
-        for (int row = 0; row < nrows; row++) {
-            for (int col = 0; col < ncols; col++) {
+        double[] valueTotals = new double [attributeValues];
+        double[] classTotals = new double [classes];
+
+        for (int row = 0; row < attributeValues; row++) {
+            for (int col = 0; col < classes; col++) {
                 int classCount = split[row][col];
-                rtotal[row] += classCount;
-                ctotal[col] += classCount;
+                valueTotals[row] += classCount;
+                classTotals[col] += classCount;
                 n += classCount;
             }
         }
 
-        for (int row = 0; row < nrows; row++) {
-            if (rtotal[row] > 0) {
-                for (int col = 0; col < ncols; col++) {
-                    if (ctotal[col] > 0) {
-                        double expected = rtotal[row] * (ctotal[col] / n);
-                        // Compute difference between observed and expected value
+        for (int row = 0; row < attributeValues; row++) {
+            if (valueTotals[row] > 0) {
+                for (int col = 0; col < classes; col++) {
+                    if (classTotals[col] > 0) {
+                        double expected = valueTotals[row] * (classTotals[col] / n);
                         double diff = Math.abs(split[row][col] - expected);
                         diff = yates ? max(diff - 0.5, 0) : diff;
-                        chival += diff * diff / expected;
+                        chi += diff * diff / expected;
                     }
                 }
             }
         }
-        return chival;
+        return chi;
     }
     public static double measureChiSquared(int[][] split) {
         // measureChiSquared returns the chi-squared statistic for the contingency table
@@ -149,14 +154,6 @@ public class AttributeMeasures {
         return chiSquared(split, true);
     }
 
-    public void printHeadacheSplit(String cls){
-        System.out.println("measure " + getClass().getSimpleName() + " for headache splitting diagnosis = " + cls);
-    }
-
-    public void printSplit(String attribute, String cls){
-        System.out.println("measure " + getClass().getSimpleName() + " for attribute" + attribute + " splitting diagnosis = " + cls);
-    }
-
     /**
      Include a main method test harness that tests each function by finding each measure
      for the attribute headache in terms of the diagnosis.
@@ -164,26 +161,13 @@ public class AttributeMeasures {
      “measure <insert> for headache splitting diagnosis = <insert>”.
      **/
     public static void main(String[] args) throws Exception {
-//        Instances data = loadData("./test_data/Diagnosis.arff");
-//        Attribute headache = data.attribute("Headache");
-//        Instances[] splitData = splitData(data, headache);
-//        int[][] table = new int[headache.numValues()][data.numClasses()];
-//        for (int i = 0; i < headache.numValues(); i++) {
-//            for (Instance instance : splitData[i]) {
-//                int value = (int) instance.classValue();
-//                table[i][value]++;
-//            }
-//        }
-        int[][] test = new int[][]{{6,6}};
-        int[][] testSplit = new int[][]{{3,2}, {3,4}};
-        double entropy = AttributeMeasures.entropy(test);
+        int[][] headacheSplit = new int[][]{{3,2}, {3,4}};
         HashMap<String, Double> measures = new HashMap<>();
 
-        measures.put("information gain", measureInformationGain(test, testSplit));
-        measures.put("gini", measureGini(test, testSplit));
-        measures.put("chi squared", measureChiSquared(testSplit));
-        measures.put("chi squared yates", measureChiSquaredYates(testSplit));
-        System.out.println(entropy);
+        measures.put("information gain", measureInformationGain(headacheSplit));
+        measures.put("gini", measureGini(headacheSplit));
+        measures.put("chi squared", measureChiSquared(headacheSplit));
+        measures.put("chi squared yates", measureChiSquaredYates(headacheSplit));
         measures.forEach(
             (measure, value) ->
             System.out.println("measure " + measure +

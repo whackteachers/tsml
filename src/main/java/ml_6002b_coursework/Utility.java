@@ -1,15 +1,11 @@
 package ml_6002b_coursework;
 
+import weka.core.Instances;
+import java.io.IOException;
+import static experiments.data.DatasetLoading.loadData;
+
 public class Utility {
-    public static void printMeasure(String measure, String cls){
-        System.out.println("measure " + measure + " for headache splitting diagnosis = " + cls);
-    }
-
-    public static void printSplit(String measure, String attribute, String cls){
-        System.out.println("measure " + measure + " for attribute" + attribute + " splitting diagnosis = " + cls);
-    }
-
-    public static void printMeasureAccuracy(String measure, String problem, double accuracy){
-        System.out.println("Id3 using measure " + measure + " on " + problem + " Problem has test accuracy = " + accuracy);
+    public static Instances loadTestData(String dataset) throws IOException {
+        return loadData("src/main/java/ml_6002b_coursework/test_data/" + dataset + ".arff");
     }
 }

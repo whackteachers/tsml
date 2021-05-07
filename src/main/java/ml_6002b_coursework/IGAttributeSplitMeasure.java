@@ -4,7 +4,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Utils;
-import java.util.Arrays;
+import java.io.Serializable;
 
 public class IGAttributeSplitMeasure implements AttributeSplitMeasure{
     /**
@@ -34,6 +34,12 @@ public class IGAttributeSplitMeasure implements AttributeSplitMeasure{
     public double computeAttributeQuality(Instances data, Attribute att){
         // adapted and modified from Id3 computeEntropy method
         double infoGain = computeEntropy(data);
+//        Instances[] splitData = null;
+//        if (att.isNominal())
+//            splitData = splitData(data, att);
+//        else if (att.isNumeric()){
+//            splitData = splitDataOnNumeric(data, att).getKey();
+//        }
         Instances[] splitData = splitData(data, att);
         for (Instances split : splitData) {
             double splitInstances = split.numInstances();
@@ -45,6 +51,11 @@ public class IGAttributeSplitMeasure implements AttributeSplitMeasure{
         return infoGain;
     }
 
+    @Override
+    public String toString() {
+        return "information gain";
+    }
+
     public static void main(String[] args) throws Exception {
         /**
          * Include a main method in all three AttributeSplitMeasure classes that prints out the split criteria
@@ -52,6 +63,6 @@ public class IGAttributeSplitMeasure implements AttributeSplitMeasure{
          * in the form “measure <insert> for attribute <insert> splitting diagnosis = <insert>”.
          * **/
         IGAttributeSplitMeasure ig = new IGAttributeSplitMeasure();
-        ig.testMain("information gain");
+        ig.testMain();
     }
 }

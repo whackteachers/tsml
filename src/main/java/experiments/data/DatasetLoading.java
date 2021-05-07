@@ -272,8 +272,8 @@ public class DatasetLoading {
             data[1] = loadDataThrowable(testFile);
             LOGGER.log(Level.FINE, problem + " loaded from predefined folds.");
         } else {
-            trainFile = new File(parentFolder + problem + "/" + problem + "_TRAIN.arff");
-            testFile = new File(parentFolder + problem + "/" + problem + "_TEST.arff");
+            trainFile = new File(parentFolder + "/" + problem + "_TRAIN.arff");
+            testFile = new File(parentFolder + "/" + problem + "_TEST.arff");
             boolean predefinedFold0Exists = trainFile.exists() && testFile.exists();
             if (predefinedFold0Exists) {
                 // CASE 2)
@@ -295,7 +295,7 @@ public class DatasetLoading {
                 // We only have a single file with all the data
                 Instances all = null;
                 try {
-                    all = DatasetLoading.loadDataThrowable(parentFolder + problem + "/" + problem);
+                    all = DatasetLoading.loadDataThrowable(parentFolder + "/" + problem);
                 } catch (IOException io) {
                     String msg = "Could not find the dataset \"" + problem + "\" in any form at the path\n" + parentFolder + "\n" + "The IOException: " + io;
                     LOGGER.log(Level.SEVERE, msg, io);

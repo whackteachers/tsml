@@ -17,7 +17,9 @@
 package experiments;
 
 import com.google.common.testing.GcFinalization;
+import evaluation.tuning.Tuner;
 import machine_learning.classifiers.SaveEachParameter;
+import machine_learning.classifiers.tuned.TunedClassifier;
 import machine_learning.classifiers.tuned.TunedRandomForest;
 import experiments.data.DatasetLists;
 import com.beust.jcommander.JCommander;
@@ -55,7 +57,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-
+import ml_6002b_coursework.TreeEnsemble;
 import machine_learning.classifiers.ensembles.SaveableEnsemble;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -149,7 +151,7 @@ public class Experiments  {
             setupAndRunExperiment(expSettings);
         }
         else {//Manually set args
-            int folds=30;
+            int folds=1;
             String[] settings=new String[9];
 
             /*
@@ -157,10 +159,10 @@ public class Experiments  {
              */
 //            String[] classifiers={"TSF_I","RISE_I","STC_I","CBOSS_I","HIVE-COTEn_I"};
 //            String classifier=classifiers[2];
-            String classifier="STC";//Classifier name: See ClassifierLists for valid options
+            String classifier="";//Classifier name: See ClassifierLists for valid options
 
-            settings[0]="-dp=C:\\Data Working Area\\Datasets"; //Where to get datasets
-            settings[1]="-rp=C:\\Experiments\\Results\\"; //Where to write results
+            settings[0]="-dp=src/main/java/ml_6002b_coursework/test_data/"; //Where to get datasets
+            settings[1]="-rp=src/main/java/ml_6002b_coursework/test_result/"; //Where to write results
             settings[2]="-gtf=false"; //Whether to generate train files or not
             settings[3]="-cn="+classifier; //Classifier name
             settings[4]="-dn="; //Problem name, don't change here as it is overwritten by probFiles
@@ -169,7 +171,7 @@ public class Experiments  {
             settings[7]="-d=true"; //Debugging
             settings[8]="--force=true"; //Overwrites existing results if true, otherwise set to false
 
-            String[] probFiles= {"ItalyPowerDemand"}; //Problem name(s)
+            String[] probFiles= {"optdigits", "Chinatown", "ShapesAll"}; //Problem name(s)
 //            String[] probFiles= DatasetLists.fixedLengthMultivariate;
             /*
              * END OF SETTINGS
@@ -180,9 +182,20 @@ public class Experiments  {
                 System.out.println("\t"+str);
             System.out.println("");
 
+            TunedClassifier classifier_ = new TunedClassifier();
+            classifier_.setClassifier(new TreeEnsemble());
+//            classifier_.setTuner(new Tuner(new CrossValidationEvaluator()));
+
             boolean threaded=true;
             if (threaded) {
-                ExperimentalArguments expSettings = new ExperimentalArguments(settings);
+                ExperimentalArguments expSettings = new ExperimentalArguments();
+                expSettings.classifierName = "TreeEnsemble";
+                expSettings.dataReadLocation = "src/main/java/ml_6002b_coursework/test_data/";
+                expSettings.resultsWriteLocation = "src/main/java/ml_6002b_coursework/test_result/";
+//                expSettings.datasetName = "Chinatown";
+                expSettings.forceEvaluation = false;
+                expSettings.classifier = classifier_;
+//                expSettings.run();
                 System.out.println("Threaded experiment with "+expSettings);
 //              setupAndRunMultipleExperimentsThreaded(expSettings, classifiers,probFiles,0,folds);
                 setupAndRunMultipleExperimentsThreaded(expSettings, new String[]{classifier},null,probFiles,0,folds);
@@ -224,7 +237,7 @@ public class Experiments  {
             DatasetLoading.setDebug(debug); //TODO when we go full enterprise and figure out how to properly do logging, clean this up
         }
         LOGGER.log(Level.FINE, expSettings.toString());
-
+        System.out.println("setting up...");
         // if a pre-instantiated classifier instance hasn't been supplied, generate one here
         if (expSettings.classifier == null) {
             // if a classifier-generating-function has been given (typically in the case of bespoke classifiers wanted in threaded exps),
@@ -237,7 +250,9 @@ public class Experiments  {
                 // Cases in the classifierlist can now change the classifier name to reflect particular parameters wanting to be
                 // represented as different classifiers, e.g. ST_1day, ST_2day
                 // The set classifier call is therefore made before defining paths that are dependent on the classifier name
-                expSettings.classifier = ClassifierLists.setClassifier(expSettings);
+                TunedClassifier classifier = new TunedClassifier();
+                classifier.setClassifier(new TreeEnsemble());
+                expSettings.classifier = classifier;  //ClassifierLists.setClassifier(expSettings);
             }
         }
 
@@ -245,7 +260,7 @@ public class Experiments  {
         //Check whether results already exists, if so and force evaluation is false: just quit
         if (quitEarlyDueToResultsExistence(expSettings))
             return null;
-
+        System.out.println("load data...");
         Instances[] data = DatasetLoading.sampleDataset(expSettings.dataReadLocation, expSettings.datasetName, expSettings.foldId);
         setupClassifierExperimentalOptions(expSettings, expSettings.classifier, data[0]);
         ClassifierResults[] results = runExperiment(expSettings, data[0], data[1], expSettings.classifier);
@@ -281,10 +296,12 @@ public class Experiments  {
         LOGGER.log(Level.FINE, "Preamble complete, real experiment starting.");
 
         try {
+            System.out.println("training...");
             ClassifierResults trainResults = training(expSettings, classifier, trainSet);
             postTrainingOperations(expSettings, classifier);
+            System.out.println("testing...");
             ClassifierResults testResults = testing(expSettings, classifier, testSet, trainResults);
-
+            System.out.println("experiment ended");
             experimentResults = new ClassifierResults[] {trainResults, testResults};
         }
         catch (Exception e) {

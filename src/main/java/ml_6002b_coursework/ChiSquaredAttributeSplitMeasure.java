@@ -14,20 +14,19 @@ public class ChiSquaredAttributeSplitMeasure implements AttributeSplitMeasure{
      * class should be configurable to use the Yates correction.
      * **/
 
-    private boolean yates = false;
+    boolean yates = false;
 
-    public ChiSquaredAttributeSplitMeasure(boolean... yates) {
-        if (yates.length > 0)
-            this.yates = yates[0];
-    }
-    public void setYates(boolean yates) {
+    public ChiSquaredAttributeSplitMeasure(boolean yates) {
         this.yates = yates;
     }
 
     @Override
     public double computeAttributeQuality(Instances data, Attribute att) throws Exception {
+        if (data.numInstances() == 0)
+            return 0;
         Instances[] splitData = splitData(data, att);
-        int[][] table = new int[att.numValues()][data.numClasses()];
+        int numValues = att.isNominal() ? att.numValues() : splitData.length;
+        int[][] table = new int[numValues][data.numClasses()];
         for (int i = 0; i < att.numValues(); i++) {
             for (Instance instance : splitData[i]) {
                 int value = (int) instance.classValue();
@@ -38,6 +37,11 @@ public class ChiSquaredAttributeSplitMeasure implements AttributeSplitMeasure{
         return yates ? measureChiSquaredYates(table) : measureChiSquared(table);
     }
 
+    @Override
+    public String toString() {
+        return "chi squared" + (yates ? " yates" : "");
+    }
+
     public static void main(String[] args) throws Exception {
         /**
          * Include a main method in all three AttributeSplitMeasure classes that prints out the split criteria
@@ -45,7 +49,7 @@ public class ChiSquaredAttributeSplitMeasure implements AttributeSplitMeasure{
          * in the form “measure <insert> for attribute <insert> splitting diagnosis = <insert>”.
          * **/
 
-        ChiSquaredAttributeSplitMeasure chiSquared = new ChiSquaredAttributeSplitMeasure();
-        chiSquared.testMain("chi squared");
+        ChiSquaredAttributeSplitMeasure chiSquared = new ChiSquaredAttributeSplitMeasure(false);
+        chiSquared.testMain();
     }
 }

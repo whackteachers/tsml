@@ -40,6 +40,11 @@ public class GiniAttributeSplitMeasure implements AttributeSplitMeasure{
         return gini;
     }
 
+    @Override
+    public String toString() {
+        return "gini";
+    }
+
     public static void main(String[] args) throws Exception {
         /**
          * Include a main method in all three AttributeSplitMeasure classes that prints out the split criteria
@@ -47,6 +52,6 @@ public class GiniAttributeSplitMeasure implements AttributeSplitMeasure{
          * in the form “measure <insert> for attribute <insert> splitting diagnosis = <insert>”.
          * **/
         GiniAttributeSplitMeasure gini = new GiniAttributeSplitMeasure();
-        gini.testMain("gini");
+        gini.testMain();
     }
 }
